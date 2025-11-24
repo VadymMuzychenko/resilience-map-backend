@@ -1,0 +1,36 @@
+services:
+  resilience-map-db:
+    image: postgis/postgis:latest
+    restart: always
+    environment:
+      POSTGRES_DB: resilience_map_db
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      TZ: Europe/Kyiv
+      PGTZ: Europe/Kyiv
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U username -d resilience_map_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  resilience-map-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      resilience-map-db:
+        condition: service_healthy
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://resilience-map-db:5432/resilience_map_db
+      - SPRING_DATASOURCE_USERNAME=username
+      - SPRING_DATASOURCE_PASSWORD=password
+      - DOCKER_BUILDKIT=1
