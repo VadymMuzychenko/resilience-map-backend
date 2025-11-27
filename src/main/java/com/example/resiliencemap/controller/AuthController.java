@@ -3,10 +3,7 @@ package com.example.resiliencemap.controller;
 import com.example.resiliencemap.core.user.model.User;
 import com.example.resiliencemap.core.verification.model.VerificationCodeSendStatusResponse;
 import com.example.resiliencemap.security.AuthService;
-import com.example.resiliencemap.security.model.ConfirmRequest;
-import com.example.resiliencemap.security.model.LoginRequest;
-import com.example.resiliencemap.security.model.RegisterRequest;
-import com.example.resiliencemap.security.model.TokenResponse;
+import com.example.resiliencemap.security.model.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,7 +30,11 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // TODO: /verification-code/resend
+    @PostMapping("/verification-code/resend")
+    public ResponseEntity<VerificationCodeSendStatusResponse> resendVerificationCode(@Valid @RequestBody ResendVerificationCodeRequest confirmRequest) {
+        VerificationCodeSendStatusResponse response = authService.resendVerificationCode(confirmRequest);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest loginRequest) {

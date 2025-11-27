@@ -32,7 +32,7 @@ public class VerificationCodeService {
         // TODO: send SMS
 
         VerificationCodeSendStatusResponse response = new VerificationCodeSendStatusResponse();
-        if (env.acceptsProfiles(Profiles.of("dev"))){
+        if (env.acceptsProfiles(Profiles.of("dev"))) {
             response.setCode(verificationCode.getCode());
         }
         response.setMessage("");
@@ -60,7 +60,7 @@ public class VerificationCodeService {
         // TODO: send Email
 
         VerificationCodeSendStatusResponse response = new VerificationCodeSendStatusResponse();
-        if (env.acceptsProfiles(Profiles.of("dev"))){
+        if (env.acceptsProfiles(Profiles.of("dev"))) {
             response.setCode(verificationCode.getCode());
         }
         response.setMessage("");
@@ -75,8 +75,8 @@ public class VerificationCodeService {
     }
 
     private VerificationCode getAndValidateCode(String code, String destination) {
-        List<VerificationCode> list = verificationCodeRepository.findLastUnusedCode(destination, code, PageRequest.of(0, 1));
-        if (!list.isEmpty()) {
+        List<VerificationCode> list = verificationCodeRepository.findLastUnusedCode(destination, PageRequest.of(0, 1));
+        if (!list.isEmpty() && list.getFirst().getCode().equals(code)) {
             VerificationCode verificationCode = list.getFirst();
             verificationCode.setUsed(true);
             return verificationCodeRepository.save(verificationCode);

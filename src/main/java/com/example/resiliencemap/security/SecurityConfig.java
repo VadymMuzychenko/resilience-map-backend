@@ -37,6 +37,7 @@ public class SecurityConfig {
                             "/api/auth/login",
                             "/api/auth/register",
                             "/api/auth/verification-code/confirm",
+                            "/api/auth/verification-code/resend",
                             "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                             "/actuator/health"
                     ).permitAll()
@@ -48,6 +49,7 @@ public class SecurityConfig {
                             "/api/auth/login",
                             "/api/auth/register",
                             "/api/auth/verification-code/confirm",
+                            "/api/auth/verification-code/resend",
                             "/actuator/health"
                     ).permitAll()
                     .anyRequest().authenticated()

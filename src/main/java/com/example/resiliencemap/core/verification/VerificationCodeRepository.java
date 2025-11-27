@@ -13,12 +13,11 @@ public interface VerificationCodeRepository extends JpaRepository<VerificationCo
     @Query("""
             SELECT vc FROM VerificationCode vc
                 WHERE vc.destination = :destination
-                AND vc.code = :code
                 AND vc.used = FALSE
                 AND vc.expiresAt > CURRENT_TIMESTAMP
                 ORDER BY vc.createdAt DESC
             """)
-    List<VerificationCode> findLastUnusedCode(@Param("destination") String destination, @Param("code") String code, Pageable pageable);
+    List<VerificationCode> findLastUnusedCode(@Param("destination") String destination, Pageable pageable);
 
     @Query("""
             SELECT vc FROM VerificationCode vc

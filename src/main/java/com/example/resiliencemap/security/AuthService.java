@@ -8,12 +8,10 @@ import com.example.resiliencemap.core.verification.VerificationCodeService;
 import com.example.resiliencemap.core.verification.model.VerificationCodeSendStatusResponse;
 import com.example.resiliencemap.functional.exception.BadRequestException;
 import com.example.resiliencemap.functional.exception.ConflictException;
+import com.example.resiliencemap.functional.exception.NotFoundException;
 import com.example.resiliencemap.functional.exception.UnauthorizedException;
 import com.example.resiliencemap.functional.utils.ValidationUtil;
-import com.example.resiliencemap.security.model.ConfirmRequest;
-import com.example.resiliencemap.security.model.LoginRequest;
-import com.example.resiliencemap.security.model.RegisterRequest;
-import com.example.resiliencemap.security.model.TokenResponse;
+import com.example.resiliencemap.security.model.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -55,31 +53,17 @@ public class AuthService {
             throw new ConflictException("A user with that name already exists: " + registerRequest.getUsername());
         }
         if (isEmailValid) {
-            if (userRepository.existsByEmail(registerRequest.getEmail())) {
-                throw new ConflictException("A user with that email already exists: " + registerRequest.getEmail());
-            }
+            checkUserExistsByEmail(registerRequest.getEmail());
         }
         if (isPhoneNumberValid) {
-            if (registerRequest.getPhoneNumber().startsWith("+")) {
-                registerRequest.setPhoneNumber(registerRequest.getPhoneNumber().substring(1));
-            }
-            if (userRepository.existsByPhoneNumber(registerRequest.getPhoneNumber())) {
-                throw new ConflictException("A user with that phone number already exists: " + registerRequest.getPhoneNumber());
-            }
+            registerRequest.setPhoneNumber(normalizePhone(registerRequest.getPhoneNumber()));
+            checkUserExistsByPhoneNumber(registerRequest.getPhoneNumber());
         }
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setFirstName(registerRequest.getFirstName());
-        user.setLastName(registerRequest.getLastName());
-        user.setPasswordHash(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRole(User.UserRole.USER);
-        user.setStatus(User.StatusType.PENDING);
-        user.setCreatedAt(OffsetDateTime.now());
+        User user = buildNewUser(registerRequest);
         User savedUser = userRepository.save(user);
 
         VerificationCodeSendStatusResponse response = new VerificationCodeSendStatusResponse();
         response.setStatus("FAIL");
-        response.setMessage("sending a verification code to email is not implemented");
         if (isPhoneNumberValid) {
 
             response = verificationCodeService.sendVerificationCodeToPhone(savedUser, registerRequest.getPhoneNumber());
@@ -91,6 +75,25 @@ public class AuthService {
         return response;
     }
 
+    private User buildNewUser(RegisterRequest registerRequest) {
+        User user = new User();
+        user.setUsername(registerRequest.getUsername());
+        user.setFirstName(registerRequest.getFirstName());
+        user.setLastName(registerRequest.getLastName());
+        user.setPasswordHash(passwordEncoder.encode(registerRequest.getPassword()));
+        user.setRole(User.UserRole.USER);
+        user.setStatus(User.StatusType.PENDING);
+        user.setCreatedAt(OffsetDateTime.now());
+        return user;
+    }
+
+    private String normalizePhone(String phone) {
+        if (phone != null && phone.startsWith("+")) {
+            return phone.substring(1);
+        }
+        return phone;
+    }
+
     @Transactional
     public TokenResponse confirmContactMethod(ConfirmRequest confirmRequest) {
         boolean isEmailValid = ValidationUtil.isEmailValid(confirmRequest.getDestination());
@@ -99,22 +102,52 @@ public class AuthService {
             throw new BadRequestException("Destination is invalid");
         }
         if (isPhoneNumberValid) {
-            if (confirmRequest.getDestination().startsWith("+")) {
-                confirmRequest.setDestination(confirmRequest.getDestination().substring(1));
-            }
-            if (userRepository.existsByPhoneNumber(confirmRequest.getDestination())) {
-                throw new ConflictException("A user with that phone number already exists: " + confirmRequest.getDestination());
-            }
+            confirmRequest.setDestination(normalizePhone(confirmRequest.getDestination()));
+            checkUserExistsByPhoneNumber(confirmRequest.getDestination());
         }
         if (isEmailValid) {
-            if (userRepository.existsByEmail(confirmRequest.getDestination())) {
-                throw new ConflictException("A user with that email already exists: " + confirmRequest.getDestination());
-            }
+            checkUserExistsByEmail(confirmRequest.getDestination());
         }
 
         User user = verificationCodeService.confirmContactVerification(confirmRequest.getCode(), confirmRequest.getDestination());
         AuthToken token = authTokenService.generateToken(user);
         return new TokenResponse(token.getToken());
+    }
+
+    public VerificationCodeSendStatusResponse resendVerificationCode(ResendVerificationCodeRequest request) {
+        boolean isEmailValid = ValidationUtil.isEmailValid(request.getDestination());
+        boolean isPhoneNumberValid = ValidationUtil.isPhoneNumberValid(request.getDestination());
+        if (!isEmailValid && !isPhoneNumberValid) {
+            throw new BadRequestException("Destination is invalid");
+        }
+        VerificationCodeSendStatusResponse  response = new VerificationCodeSendStatusResponse();
+        response.setStatus("FAIL");
+        if (isEmailValid) {
+            checkUserExistsByEmail(request.getDestination());
+            User user = userRepository.findInactiveUser(request.getUsername())
+                    .orElseThrow(() -> new NotFoundException("Inactive User not found"));
+            response = verificationCodeService.sendVerificationCodeToEmail(user, request.getDestination());
+        }
+        if (isPhoneNumberValid) {
+            request.setDestination(normalizePhone(request.getDestination()));
+            checkUserExistsByPhoneNumber(request.getDestination());
+            User user = userRepository.findInactiveUser(request.getUsername())
+                    .orElseThrow(() -> new NotFoundException("Inactive User not found"));
+            response = verificationCodeService.sendVerificationCodeToPhone(user, request.getDestination());
+        }
+        return response;
+    }
+
+    private void checkUserExistsByPhoneNumber(String phoneNumber) {
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new ConflictException("A user with that phone number already exists: " + phoneNumber);
+        }
+    }
+
+    private void checkUserExistsByEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new ConflictException("A user with that email already exists: " + email);
+        }
     }
 
     public TokenResponse loginUser(LoginRequest loginRequest) {
