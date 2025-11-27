@@ -51,22 +51,21 @@ public class AuthService {
             throw new BadRequestException("Email or phone number is required");
         }
 
-        if (isEmailValid){
+        if (userRepository.existsByUsername((registerRequest.getUsername()))) {
+            throw new ConflictException("A user with that name already exists: " + registerRequest.getUsername());
+        }
+        if (isEmailValid) {
             if (userRepository.existsByEmail(registerRequest.getEmail())) {
                 throw new ConflictException("A user with that email already exists: " + registerRequest.getEmail());
             }
         }
-        if (isPhoneNumberValid){
+        if (isPhoneNumberValid) {
+            if (registerRequest.getPhoneNumber().startsWith("+")) {
+                registerRequest.setPhoneNumber(registerRequest.getPhoneNumber().substring(1));
+            }
             if (userRepository.existsByPhoneNumber(registerRequest.getPhoneNumber())) {
                 throw new ConflictException("A user with that phone number already exists: " + registerRequest.getPhoneNumber());
             }
-            if (registerRequest.getPhoneNumber().startsWith("+")){
-                registerRequest.setPhoneNumber(registerRequest.getPhoneNumber().substring(1));
-            }
-        }
-
-        if (userRepository.existsByUsername((registerRequest.getUsername()))) {
-            throw new ConflictException("A user with that name already exists: " + registerRequest.getUsername());
         }
         User user = new User();
         user.setUsername(registerRequest.getUsername());
@@ -78,29 +77,18 @@ public class AuthService {
         user.setCreatedAt(OffsetDateTime.now());
         User savedUser = userRepository.save(user);
 
-
-
         VerificationCodeSendStatusResponse response = new VerificationCodeSendStatusResponse();
         response.setStatus("FAIL");
         response.setMessage("sending a verification code to email is not implemented");
-        if (isPhoneValid(registerRequest.getPhoneNumber())) {
+        if (isPhoneNumberValid) {
 
             response = verificationCodeService.sendVerificationCodeToPhone(savedUser, registerRequest.getPhoneNumber());
-            return response;
             // TODO: if not sent
-        } else if (isEmailValid(registerRequest.getEmail())) {
+        } else if (isEmailValid) {
 
             response = verificationCodeService.sendVerificationCodeToEmail(savedUser, registerRequest.getEmail());
         }
         return response;
-    }
-
-    public boolean isEmailValid(String email) {
-        return email != null && !email.isBlank();
-    }
-
-    public boolean isPhoneValid(String phone) {
-        return phone != null && !phone.isBlank();
     }
 
     @Transactional
@@ -110,9 +98,17 @@ public class AuthService {
         if (!isEmailValid && !isPhoneNumberValid) {
             throw new BadRequestException("Destination is invalid");
         }
-        if (isPhoneNumberValid){
-            if (confirmRequest.getDestination().startsWith("+")){
+        if (isPhoneNumberValid) {
+            if (confirmRequest.getDestination().startsWith("+")) {
                 confirmRequest.setDestination(confirmRequest.getDestination().substring(1));
+            }
+            if (userRepository.existsByPhoneNumber(confirmRequest.getDestination())) {
+                throw new ConflictException("A user with that phone number already exists: " + confirmRequest.getDestination());
+            }
+        }
+        if (isEmailValid) {
+            if (userRepository.existsByEmail(confirmRequest.getDestination())) {
+                throw new ConflictException("A user with that email already exists: " + confirmRequest.getDestination());
             }
         }
 
