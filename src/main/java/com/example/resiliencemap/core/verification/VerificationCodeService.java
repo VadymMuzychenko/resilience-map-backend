@@ -5,11 +5,10 @@ import com.example.resiliencemap.core.user.model.User;
 import com.example.resiliencemap.core.verification.model.VerificationCode;
 import com.example.resiliencemap.core.verification.model.VerificationCodeSendStatusResponse;
 import com.example.resiliencemap.core.verification.model.VerificationContactMethod;
+import com.example.resiliencemap.functional.SpringActiveProfile;
 import com.example.resiliencemap.functional.exception.BadRequestException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.Profiles;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +22,7 @@ public class VerificationCodeService {
 
     private final VerificationCodeRepository verificationCodeRepository;
     private final UserRepository userRepository;
-    private final Environment env;
+    private final SpringActiveProfile springActiveProfile;
 
     public VerificationCodeSendStatusResponse sendVerificationCodeToPhone(User user, String phone) {
         VerificationCode verificationCode = buildVerificationCode(user, phone, VerificationContactMethod.PHONE);
@@ -32,7 +31,7 @@ public class VerificationCodeService {
         // TODO: send SMS
 
         VerificationCodeSendStatusResponse response = new VerificationCodeSendStatusResponse();
-        if (env.acceptsProfiles(Profiles.of("dev"))) {
+        if (springActiveProfile.isDev()) {
             response.setCode(verificationCode.getCode());
         }
         response.setMessage("");
@@ -60,7 +59,7 @@ public class VerificationCodeService {
         // TODO: send Email
 
         VerificationCodeSendStatusResponse response = new VerificationCodeSendStatusResponse();
-        if (env.acceptsProfiles(Profiles.of("dev"))) {
+        if (springActiveProfile.isDev()) {
             response.setCode(verificationCode.getCode());
         }
         response.setMessage("");

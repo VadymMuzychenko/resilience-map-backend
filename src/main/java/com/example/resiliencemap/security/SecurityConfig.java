@@ -1,11 +1,11 @@
 package com.example.resiliencemap.security;
 
+import com.example.resiliencemap.functional.SpringActiveProfile;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.Profiles;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -28,10 +28,11 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final SpringActiveProfile springActiveProfile;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, Environment env) throws Exception {
-        if (env.acceptsProfiles(Profiles.of("dev"))) {
+        if (springActiveProfile.isDev()) {
             http.authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(
                             "/api/auth/login",
