@@ -12,7 +12,7 @@ public interface AidPointContactRepository extends JpaRepository<AidPointContact
 
     @Query("""
             SELECT a FROM AidPointContact a
-            WHERE a.aidPoint.id = ?1 
+            WHERE a.aidPoint.id = ?1
                         AND (a.fullName LIKE %?2% OR a.phoneNumber LIKE %?2%)
             ORDER BY a.fullName, a.phoneNumber, a.id""")
     List<AidPointContact> findContactsForAdmin(Long id, String searchData);

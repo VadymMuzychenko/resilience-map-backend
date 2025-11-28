@@ -4,6 +4,7 @@ import com.example.resiliencemap.core.contact.AidPointContactService;
 import com.example.resiliencemap.core.contact.model.AidPointContactCreateRequest;
 import com.example.resiliencemap.core.contact.model.AidPointContactDetailResponse;
 import com.example.resiliencemap.core.contact.model.AidPointContactResponse;
+import com.example.resiliencemap.core.contact.model.AidPointContactUpdateRequest;
 import com.example.resiliencemap.core.user.model.User;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
@@ -24,10 +25,8 @@ public class AidPointContractController {
     public List<AidPointContactResponse> getAidPointContacts(
             @PathVariable("aidPointId") Long aidPointId,
             @RequestParam(value = "searchData", defaultValue = "") String searchData,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
             @AuthenticationPrincipal User user) {
-        return aidPointContactService.getAidPointContacts(aidPointId, searchData, page, pageSize, user);
+        return aidPointContactService.getAidPointContacts(aidPointId, searchData, user);
     }
 
     @GetMapping("/aid-point-contact/all")
@@ -43,6 +42,13 @@ public class AidPointContractController {
     public AidPointContactResponse getAidPointContact(@PathVariable("contactId") Long contactId,
                                                       @AuthenticationPrincipal User user) {
         return aidPointContactService.getAidPointContactResponse(contactId, user);
+    }
+
+    @PostMapping("/aid-point-contact/{contactId}")
+    public AidPointContactResponse editAidPointContact(@PathVariable("contactId") Long contactId,
+                                                       @Valid @RequestBody AidPointContactUpdateRequest request,
+                                                       @AuthenticationPrincipal User user) {
+        return aidPointContactService.updateAidPointContactResponse(contactId, request, user);
     }
 
     @PostMapping("/aid-point/{aidPointId}/contact")

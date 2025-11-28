@@ -2,10 +2,7 @@ package com.example.resiliencemap.core.contact;
 
 import com.example.resiliencemap.core.aidpoint.AidPointService;
 import com.example.resiliencemap.core.aidpoint.model.AidPoint;
-import com.example.resiliencemap.core.contact.model.AidPointContact;
-import com.example.resiliencemap.core.contact.model.AidPointContactCreateRequest;
-import com.example.resiliencemap.core.contact.model.AidPointContactDetailResponse;
-import com.example.resiliencemap.core.contact.model.AidPointContactResponse;
+import com.example.resiliencemap.core.contact.model.*;
 import com.example.resiliencemap.core.user.model.User;
 import com.example.resiliencemap.functional.exception.ConflictException;
 import com.example.resiliencemap.functional.exception.ForbiddenException;
@@ -43,7 +40,7 @@ public class AidPointContactService {
         }
     }
 
-    public List<AidPointContactResponse> getAidPointContacts(Long id, String searchData, int page, int pageSize, User user) {
+    public List<AidPointContactResponse> getAidPointContacts(Long id, String searchData, User user) {
         List<AidPointContact> aidPointContacts;
         if (User.UserRole.ADMIN.equals(user.getRole()) || User.UserRole.MODERATOR.equals(user.getRole())) {
             aidPointContacts = aidPointContactRepository.findContactsForAdmin(id, searchData);
@@ -68,6 +65,18 @@ public class AidPointContactService {
         aidPointContact.setAidPoint(aidPoint);
         aidPointContact.setCreatedAt(OffsetDateTime.now());
         return aidPointContactMapper.toAidPointContactResponse(aidPointContact, user);
+    }
+
+    public AidPointContactResponse updateAidPointContactResponse(Long contactId, AidPointContactUpdateRequest request, User user) {
+        AidPointContact contact = getContactFromRepository(contactId);
+        if (!(User.UserRole.ADMIN.equals(user.getRole()) || contact.getAidPoint().getCreatedBy().getId().equals(user.getId()))) {
+            throw new ForbiddenException("Access denied");
+        }
+        contact.setFullName(request.getFullName());
+        contact.setRole(request.getRole());
+        contact.setPhoneNumber(request.getPhoneNumber());
+        contact.setHide(request.getIsHide());
+        return aidPointContactMapper.toAidPointContactResponse(aidPointContactRepository.save(contact), user);
     }
 
     public List<AidPointContactDetailResponse> getAllAidPointContacts(String searchData, int page, int pageSize, User user) {
