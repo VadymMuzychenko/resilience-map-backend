@@ -156,7 +156,7 @@ public class AidPointService {
                 .map(aidPointContact -> aidPointContactMapper.toAidPointContactResponse(aidPointContact, user)).toList();
         detailResponse.setContacts(contacts);
         detailResponse.setServices(aidPoint.getServiceTypes().stream().map(ServiceTypeMapper::toServiceTypeResponse).toList());
-        detailResponse.setCreatedBy(userService.getUserResponse(aidPoint.getCreatedBy()));
+        detailResponse.setCreatedBy(userService.toUserResponse(aidPoint.getCreatedBy(), user));
         detailResponse.setPhotoIds(photoIds);
         return detailResponse;
     }
