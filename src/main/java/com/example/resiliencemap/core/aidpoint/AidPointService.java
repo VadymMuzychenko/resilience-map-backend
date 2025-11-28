@@ -7,6 +7,7 @@ import com.example.resiliencemap.core.contact.model.AidPointContactResponse;
 import com.example.resiliencemap.core.locationtype.LocationTypeMapper;
 import com.example.resiliencemap.core.locationtype.LocationTypeService;
 import com.example.resiliencemap.core.locationtype.model.LocationType;
+import com.example.resiliencemap.core.locationtype.model.LocationTypeChangeRequest;
 import com.example.resiliencemap.core.photo.service.PhotoService;
 import com.example.resiliencemap.core.servicetype.ServiceTypeMapper;
 import com.example.resiliencemap.core.servicetype.ServiceTypeRepository;
@@ -110,6 +111,10 @@ public class AidPointService {
 
     public AidPointDetailResponse getAidPoint(Long id, User user) {
         AidPoint aidPoint = getAidPointById(id);
+        return toAidPointDetailResponse(aidPoint, user);
+    }
+
+    private AidPointDetailResponse toAidPointDetailResponse(AidPoint aidPoint, User user){
         List<Long> photoIds = photoService.getPhotoIDsByAidPoint(aidPoint.getId());
         return toAidPointDetailResponse(aidPoint, user, photoIds);
     }
@@ -144,6 +149,32 @@ public class AidPointService {
         return lightweightResponse;
     }
 
+    public AidPointDetailResponse updateAidPoint(Long aidPointId, AidPointUpdateRequest request, User user) {
+        AidPoint aidPoint = getAidPointById(aidPointId);
+        if (!User.UserRole.ADMIN.equals(user.getRole()) || !aidPoint.getCreatedBy().equals(user)) {
+            throw new ForbiddenException("Access Denied");
+        }
+        aidPoint.setName(request.getName());
+        aidPoint.setDescription(request.getDescription());
+        GeometryFactory gf = new GeometryFactory();
+        Point point = gf.createPoint(new Coordinate(request.getLocation().getLongitude(), request.getLocation().getLatitude()));
+        point.setSRID(4326);
+        aidPoint.setLocation(point);
+        aidPoint.setShowPoint(true);
+        aidPoint.setUpdatedAt(OffsetDateTime.now());
+        AidPoint savedAidPoint = aidPointRepository.save(aidPoint);
+        return toAidPointDetailResponse(savedAidPoint, user);
+    }
+
+    public AidPointDetailResponse changeLocationType(Long aidPointId, LocationTypeChangeRequest request, User user) {
+        AidPoint aidPoint = getAidPointById(aidPointId);
+        LocationType locationType = locationTypeService.getLocationType(request.getNewLocationTypeId());
+        aidPoint.setLocationType(locationType);
+        aidPoint.setUpdatedAt(OffsetDateTime.now());
+        AidPoint savedAidPoint = aidPointRepository.save(aidPoint);
+        return toAidPointDetailResponse(savedAidPoint, user);
+    }
+
     public AidPointDetailResponse addServiceType(Long aidPointId, Long serviceTypeId, User user) {
         AidPoint aidPoint = getAidPointById(aidPointId);
         ServiceType serviceType = serviceTypeService.getServiceTypeFromRepository(serviceTypeId);
@@ -152,7 +183,22 @@ public class AidPointService {
         }
         aidPoint.getServiceTypes().add(serviceType);
         AidPoint savedAidPoint = aidPointRepository.save(aidPoint);
-        List<Long> photoIds = photoService.getPhotoIDsByAidPoint(aidPoint.getId());
-        return toAidPointDetailResponse(savedAidPoint, user, photoIds);
+        return toAidPointDetailResponse(savedAidPoint, user);
+    }
+
+    public AidPointDetailResponse removeServiceType(Long aidPointId, Long serviceTypeId, User user) {
+        AidPoint aidPoint = getAidPointById(aidPointId);
+        ServiceType serviceType = serviceTypeService.getServiceTypeFromRepository(serviceTypeId);
+        if (!(User.UserRole.ADMIN.equals(user.getRole()) || aidPoint.getCreatedBy().getId().equals(user.getId()))) {
+            throw new ForbiddenException("Access denied");
+        }
+        aidPoint.getServiceTypes().remove(serviceType);
+        AidPoint savedAidPoint = aidPointRepository.save(aidPoint);
+        return toAidPointDetailResponse(savedAidPoint, user);
+    }
+
+    public void deleteAidPoint(Long aidPointId) {
+        AidPoint aidPoint = getAidPointById(aidPointId);
+        aidPointRepository.delete(aidPoint);
     }
 }

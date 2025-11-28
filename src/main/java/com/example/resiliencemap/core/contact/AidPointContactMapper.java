@@ -17,12 +17,11 @@ public class AidPointContactMapper {
         response.setId(aidPointContact.getId());
         response.setFullName(aidPointContact.getFullName());
         response.setPhoneNumber(aidPointContact.getPhoneNumber());
+        response.setRole(aidPointContact.getRole());
         if (User.UserRole.ADMIN.equals(user.getRole()) || User.UserRole.MODERATOR.equals(user.getRole())) {
-            response.setRole(aidPointContact.getRole());
             response.setHide(aidPointContact.getHide());
             response.setCreatedAt(aidPointContact.getCreatedAt());
         } else if (aidPointContactRepository.existsByAidPoint_CreatedBy_Id(user.getId())) {
-            response.setRole(aidPointContact.getRole());
             response.setHide(aidPointContact.getHide());
             response.setCreatedAt(aidPointContact.getCreatedAt());
         }
