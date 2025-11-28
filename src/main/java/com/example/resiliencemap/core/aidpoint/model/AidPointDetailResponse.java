@@ -32,5 +32,5 @@ public class AidPointDetailResponse {
 
     private List<AidPointContactResponse> contacts;
     private List<ServiceTypeResponse> services;
-
+    private List<Long> photoIds;
 }

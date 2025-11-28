@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class AidPointCreateRequest {
@@ -24,4 +26,7 @@ public class AidPointCreateRequest {
 
     private Boolean addUserDataToContacts;
 
+    private List<Long> serviceIds;
+
+    private List<Long> draftPhotoIds;
 }

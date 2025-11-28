@@ -67,7 +67,7 @@ public class LocationTypeService {
         LocationType locationType = new LocationType();
         locationType.setCode("private_initiative");
         locationType.setSmsCode("u");
-        locationType.setName("Створено користувачем");
+        locationType.setName("Приватна ініціатива");
         locationType.setDescription("Точка, створена користувачем");
         return locationTypeRepository.save(locationType);
     }

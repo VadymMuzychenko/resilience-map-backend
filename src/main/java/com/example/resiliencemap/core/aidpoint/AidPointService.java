@@ -7,7 +7,9 @@ import com.example.resiliencemap.core.contact.model.AidPointContactResponse;
 import com.example.resiliencemap.core.locationtype.LocationTypeMapper;
 import com.example.resiliencemap.core.locationtype.LocationTypeService;
 import com.example.resiliencemap.core.locationtype.model.LocationType;
+import com.example.resiliencemap.core.photo.service.PhotoService;
 import com.example.resiliencemap.core.servicetype.ServiceTypeMapper;
+import com.example.resiliencemap.core.servicetype.ServiceTypeRepository;
 import com.example.resiliencemap.core.servicetype.ServiceTypeService;
 import com.example.resiliencemap.core.servicetype.model.ServiceType;
 import com.example.resiliencemap.core.user.UserService;
@@ -21,6 +23,7 @@ import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +39,8 @@ public class AidPointService {
     private final AidPointContactMapper aidPointContactMapper;
     private final UserService userService;
     private final ServiceTypeService serviceTypeService;
+    private final PhotoService photoService;
+    private final ServiceTypeRepository serviceTypeRepository;
 
     public AidPoint createAndSaveAidPoint(AidPointCreateRequest request, User user) {
 
@@ -66,7 +71,28 @@ public class AidPointService {
 
     public AidPointDetailResponse addAidPoint(AidPointCreateRequest request, User user) {
         AidPoint aidPoint = createAndSaveAidPoint(request, user);
-        return toAidPointDetailResponse(aidPoint, user); // TODO: response without contacts?
+        List<Long> photosIds = addPhotos(aidPoint, request.getDraftPhotoIds());
+        aidPoint = addServiceTypes(aidPoint, request.getServiceIds());
+        return toAidPointDetailResponse(aidPoint, user, photosIds); // TODO: response without contacts?
+    }
+
+    private List<Long> addPhotos(AidPoint aidPoint, List<Long> draftPhotoIds) {
+        List<Long> photosIds = new ArrayList<>();
+        if (draftPhotoIds != null && !draftPhotoIds.isEmpty()) {
+            photosIds = photoService.moveDraftPhotosToAidPointPhotos(draftPhotoIds, aidPoint);
+        }
+        return photosIds;
+    }
+
+    private AidPoint addServiceTypes(AidPoint aidPoint, List<Long> serviceIds) {
+        if (serviceIds != null && !serviceIds.isEmpty()) {
+            for (Long serviceId : serviceIds) {
+                serviceTypeRepository.findById(serviceId).ifPresent(serviceType ->
+                        aidPoint.getServiceTypes().add(serviceType));
+            }
+            return aidPointRepository.save(aidPoint);
+        }
+        return aidPoint;
     }
 
     public List<AidPointLightweightResponse> getAidPointsWithinRadius(Double latitude, Double longitude, Double radius) {
@@ -84,10 +110,11 @@ public class AidPointService {
 
     public AidPointDetailResponse getAidPoint(Long id, User user) {
         AidPoint aidPoint = getAidPointById(id);
-        return toAidPointDetailResponse(aidPoint, user);
+        List<Long> photoIds = photoService.getPhotoIDsByAidPoint(aidPoint.getId());
+        return toAidPointDetailResponse(aidPoint, user, photoIds);
     }
 
-    private AidPointDetailResponse toAidPointDetailResponse(AidPoint aidPoint, User user) {
+    private AidPointDetailResponse toAidPointDetailResponse(AidPoint aidPoint, User user, List<Long> photoIds) {
         AidPointDetailResponse detailResponse = new AidPointDetailResponse();
         detailResponse.setId(aidPoint.getId());
         detailResponse.setName(aidPoint.getName());
@@ -100,9 +127,9 @@ public class AidPointService {
         List<AidPointContactResponse> contacts = aidPointContactRepository.findByAidPoint_Id(aidPoint.getId()).stream()
                 .map(aidPointContact -> aidPointContactMapper.toAidPointContactResponse(aidPointContact, user)).toList();
         detailResponse.setContacts(contacts);
-
         detailResponse.setServices(aidPoint.getServiceTypes().stream().map(ServiceTypeMapper::toServiceTypeResponse).toList());
         detailResponse.setCreatedBy(userService.getUserResponse(aidPoint.getCreatedBy()));
+        detailResponse.setPhotoIds(photoIds);
         return detailResponse;
     }
 
@@ -117,7 +144,7 @@ public class AidPointService {
         return lightweightResponse;
     }
 
-    public AidPointDetailResponse addServiceType(Long aidPointId,Long serviceTypeId, User user) {
+    public AidPointDetailResponse addServiceType(Long aidPointId, Long serviceTypeId, User user) {
         AidPoint aidPoint = getAidPointById(aidPointId);
         ServiceType serviceType = serviceTypeService.getServiceTypeFromRepository(serviceTypeId);
         if (!(User.UserRole.ADMIN.equals(user.getRole()) || aidPoint.getCreatedBy().getId().equals(user.getId()))) {
@@ -125,6 +152,7 @@ public class AidPointService {
         }
         aidPoint.getServiceTypes().add(serviceType);
         AidPoint savedAidPoint = aidPointRepository.save(aidPoint);
-        return toAidPointDetailResponse(savedAidPoint, user);
+        List<Long> photoIds = photoService.getPhotoIDsByAidPoint(aidPoint.getId());
+        return toAidPointDetailResponse(savedAidPoint, user, photoIds);
     }
 }

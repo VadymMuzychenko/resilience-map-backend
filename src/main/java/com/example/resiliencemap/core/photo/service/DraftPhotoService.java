@@ -4,6 +4,7 @@ import com.example.resiliencemap.core.photo.model.DraftPhoto;
 import com.example.resiliencemap.core.photo.model.SaveDraftPhotoResponse;
 import com.example.resiliencemap.core.photo.repository.DraftPhotoRepository;
 import com.example.resiliencemap.core.user.model.User;
+import com.example.resiliencemap.functional.exception.NotFoundException;
 import com.example.resiliencemap.functional.utils.ImageUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,14 +37,17 @@ public class DraftPhotoService {
 
     @Transactional
     public byte[] getImage(Long id) {
-        Optional<DraftPhoto> dbImage = draftPhotoRepository.findById(id);
-        byte[] image = ImageUtil.decompressImage(dbImage.get().getImageData());
-        return image;
+        DraftPhoto draftPhoto = getPhoto(id);
+        return ImageUtil.decompressImage(draftPhoto.getImageData());
     }
 
     public DraftPhoto getPhoto(Long id) {
         Optional<DraftPhoto> dbImage = draftPhotoRepository.findById(id);
-        return dbImage.get();
+        if (dbImage.isPresent()) {
+            return dbImage.get();
+        } else {
+            throw new NotFoundException("DraftPhoto with this ID was not found: " + id);
+        }
     }
 
     public void removeDraftPhoto(Long draftPhotoId) {

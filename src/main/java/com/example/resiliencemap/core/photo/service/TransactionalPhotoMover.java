@@ -17,11 +17,11 @@ public class TransactionalPhotoMover {
     private final DraftPhotoService draftPhotoService;
 
     @Transactional
-    public Long movePhotoFromDraftToWCPhoto(Long draftUUID, boolean isPrimary, AidPoint aidPoint) {
-        DraftPhoto draftPhoto = draftPhotoService.getPhoto(draftUUID);
-        Long savedUuid = savePhoto(draftPhoto, isPrimary, aidPoint);
-        draftPhotoService.removeDraftPhoto(draftUUID);
-        return savedUuid;
+    public Long movePhotoFromDraftToAidPointPhoto(Long draftPhotoId, boolean isPrimary, AidPoint aidPoint) {
+        DraftPhoto draftPhoto = draftPhotoService.getPhoto(draftPhotoId);
+        Long savedId = savePhoto(draftPhoto, isPrimary, aidPoint);
+        draftPhotoService.removeDraftPhoto(draftPhotoId);
+        return savedId;
     }
 
     private Long savePhoto(DraftPhoto draftPhoto, boolean isPrimary, AidPoint aidPoint) {
@@ -35,11 +35,11 @@ public class TransactionalPhotoMover {
     }
 
     @Transactional
-    public Long movePhotoFromDraftToCommentPhoto(Long draftUUID, boolean isPrimary, Comment comment) {
-        DraftPhoto draftPhoto = draftPhotoService.getPhoto(draftUUID);
-        Long savedUuid = savePhoto(draftPhoto, isPrimary, comment);
-        draftPhotoService.removeDraftPhoto(draftUUID);
-        return savedUuid;
+    public Long movePhotoFromDraftToCommentPhoto(Long draftPhotoId, boolean isPrimary, Comment comment) {
+        DraftPhoto draftPhoto = draftPhotoService.getPhoto(draftPhotoId);
+        Long savedId = savePhoto(draftPhoto, isPrimary, comment);
+        draftPhotoService.removeDraftPhoto(draftPhotoId);
+        return savedId;
     }
 
     private Long savePhoto(DraftPhoto draftPhoto, boolean isPrimary, Comment comment) {
