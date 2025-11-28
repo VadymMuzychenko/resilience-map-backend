@@ -54,8 +54,11 @@ public class AidPointController {
     public ResponseEntity<List<AidPointLightweightResponse>> getAllWithinRange(
             @RequestParam("latitude") Double latitude,
             @RequestParam("longitude") Double longitude,
-            @RequestParam("range") Double range) {
-        return ResponseEntity.ok(aidPointService.getAidPointsWithinRadius(latitude, longitude, range));
+            @RequestParam("range") Double range,
+            @RequestParam(value = "location-type-id", required = false) Long locationTypeId,
+            @RequestParam(value = "search-query", required = false) String searchQuery,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(aidPointService.getAidPointsWithinRadius(latitude, longitude, range, locationTypeId, searchQuery, user));
     }
 
     @PatchMapping("/{aidPointId}/service/{serviceId}")

@@ -17,6 +17,7 @@ import com.example.resiliencemap.core.user.UserService;
 import com.example.resiliencemap.core.user.model.User;
 import com.example.resiliencemap.functional.exception.ForbiddenException;
 import com.example.resiliencemap.functional.exception.NotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -70,6 +71,7 @@ public class AidPointService {
         return aidPointRepository.save(aidPoint);
     }
 
+    @Transactional
     public AidPointDetailResponse addAidPoint(AidPointCreateRequest request, User user) {
         AidPoint aidPoint = createAndSaveAidPoint(request, user);
         List<Long> photosIds = addPhotos(aidPoint, request.getDraftPhotoIds());
@@ -96,11 +98,32 @@ public class AidPointService {
         return aidPoint;
     }
 
-    public List<AidPointLightweightResponse> getAidPointsWithinRadius(Double latitude, Double longitude, Double radius) {
+    public List<AidPointLightweightResponse> getAidPointsWithinRadius(Double latitude, Double longitude, Double radius, Long locationTypeId, String searchQuery, User user) {
         if (radius > MAX_ALLOWED_RADIUS) {
             radius = MAX_ALLOWED_RADIUS;
         }
-        List<AidPoint> aidPoints = aidPointRepository.findAidPointsWithinRadiusForUser(longitude, latitude, radius);
+        List<AidPoint> aidPoints;
+        if (User.UserRole.ADMIN.equals(user.getRole())) {
+            if (locationTypeId != null && searchQuery != null && !searchQuery.isBlank()) {
+                aidPoints = aidPointRepository.findAidPointsWithinRadiusForAdmin(longitude, latitude, radius, locationTypeId, searchQuery);
+            } else if (locationTypeId != null) {
+                aidPoints = aidPointRepository.findAidPointsWithinRadiusForAdmin(longitude, latitude, radius, locationTypeId);
+            } else if (searchQuery != null && !searchQuery.isBlank()) {
+                aidPoints = aidPointRepository.findAidPointsWithinRadiusForAdmin(longitude, latitude, radius, searchQuery);
+            } else {
+                aidPoints = aidPointRepository.findAidPointsWithinRadiusForAdmin(longitude, latitude, radius);
+            }
+        } else {
+            if (locationTypeId != null && searchQuery != null && !searchQuery.isBlank()) {
+                aidPoints = aidPointRepository.findAidPointsWithinRadiusForUser(longitude, latitude, radius, locationTypeId, searchQuery);
+            } else if (locationTypeId != null) {
+                aidPoints = aidPointRepository.findAidPointsWithinRadiusForUser(longitude, latitude, radius, locationTypeId);
+            } else if (searchQuery != null && !searchQuery.isBlank()) {
+                aidPoints = aidPointRepository.findAidPointsWithinRadiusForUser(longitude, latitude, radius, searchQuery);
+            } else {
+                aidPoints = aidPointRepository.findAidPointsWithinRadiusForUser(longitude, latitude, radius);
+            }
+        }
         return aidPoints.stream().map(this::toAidPointLightweightResponse).toList();
     }
 
