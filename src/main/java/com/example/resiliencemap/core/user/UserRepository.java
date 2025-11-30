@@ -4,8 +4,11 @@ import com.example.resiliencemap.core.user.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -46,4 +49,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select u from User u")
     Page<User> findUsersForAdmin(Pageable pageable);
+
+    @Modifying
+    @Query("DELETE FROM User u WHERE u.status = 'PENDING' AND u.createdAt < :expirationTime")
+    int deleteUnverifiedUsers(@Param("expirationTime") OffsetDateTime expirationTime);
 }
