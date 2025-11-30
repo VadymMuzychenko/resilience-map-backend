@@ -164,6 +164,9 @@ public class AuthService {
     }
 
     public void logoutUser(User user, String token) {
+        if (token.startsWith("Bearer ")){
+            token = token.substring(7);
+        }
         authTokenService.revokeToken(user, token);
     }
 }

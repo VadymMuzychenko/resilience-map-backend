@@ -1,6 +1,8 @@
 package com.example.resiliencemap.core.user;
 
 import com.example.resiliencemap.core.user.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -21,4 +23,27 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select u from User u where u.username = ?1 and u.status = 'PENDING'")
     Optional<User> findInactiveUser(String username);
+
+    @Query("""
+            select u from User u
+            where  u.status = 'ACTIVE' and
+                    u.username like CONCAT('%', ?1, '%')
+                    or u.firstName like CONCAT('%', ?1, '%')
+                    or u.lastName like CONCAT('%', ?1, '%')""")
+    Page<User> findUsersForUser(String searchQuery, Pageable pageable);
+
+    @Query("""
+            select u from User u
+            where  u.status = 'ACTIVE'""")
+    Page<User> findUsersForUser(Pageable pageable);
+
+    @Query("""
+            select u from User u
+            where  u.username like CONCAT('%', ?1, '%')
+                    or u.firstName like CONCAT('%', ?1, '%')
+                    or u.lastName like CONCAT('%', ?1, '%')""")
+    Page<User> findUsersForAdmin(String searchQuery, Pageable pageable);
+
+    @Query("select u from User u")
+    Page<User> findUsersForAdmin(Pageable pageable);
 }

@@ -11,4 +11,9 @@ public interface AuthTokenRepository extends JpaRepository<AuthToken, Long> {
     Optional<AuthToken> findByTokenAndRevokedFalseAndUser_Username(String token, String username);
 
     AuthToken findByUserAndToken(User user, String token);
+
+    @Query("select a from AuthToken a where a.user.id = ?1 and a.token = ?2 and a.revoked = false")
+    AuthToken findByUser_IdAndTokenAndRevoked(Long id, String token);
+
+
 }

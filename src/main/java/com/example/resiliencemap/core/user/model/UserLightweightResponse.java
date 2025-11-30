@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserResponse {
+public class UserLightweightResponse {
 
     private Long id;
     private String phoneNumber;

@@ -28,7 +28,7 @@ public class AuthTokenService {
     }
 
     public void revokeToken(User user, String token) {
-        AuthToken authToken = authTokenRepository.findByUserAndToken(user, token);
+        AuthToken authToken = authTokenRepository.findByUser_IdAndTokenAndRevoked(user.getId(), token);
         authToken.setRevoked(true);
         authTokenRepository.save(authToken);
     }

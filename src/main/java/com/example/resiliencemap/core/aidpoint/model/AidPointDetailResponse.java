@@ -3,7 +3,7 @@ package com.example.resiliencemap.core.aidpoint.model;
 import com.example.resiliencemap.core.contact.model.AidPointContactResponse;
 import com.example.resiliencemap.core.locationtype.model.LocationTypeResponse;
 import com.example.resiliencemap.core.servicetype.model.ServiceTypeResponse;
-import com.example.resiliencemap.core.user.model.UserResponse;
+import com.example.resiliencemap.core.user.model.UserLightweightResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +28,7 @@ public class AidPointDetailResponse {
     private String address;
 
     private LocationTypeResponse locationType;
-    private UserResponse createdBy;
+    private UserLightweightResponse createdBy;
 
     private List<AidPointContactResponse> contacts;
     private List<ServiceTypeResponse> services;

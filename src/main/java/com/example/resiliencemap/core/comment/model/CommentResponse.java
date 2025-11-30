@@ -1,6 +1,6 @@
 package com.example.resiliencemap.core.comment.model;
 
-import com.example.resiliencemap.core.user.model.UserResponse;
+import com.example.resiliencemap.core.user.model.UserLightweightResponse;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,7 +12,7 @@ import java.util.List;
 public class CommentResponse {
     private Long id;
 //    private Long aidPointId; TODO
-    private UserResponse user;
+    private UserLightweightResponse user;
     private String text;
     private Short rating;
     private OffsetDateTime createdAt;
