@@ -183,7 +183,7 @@ public class AidPointService {
         Point point = gf.createPoint(new Coordinate(request.getLocation().getLongitude(), request.getLocation().getLatitude()));
         point.setSRID(4326);
         aidPoint.setLocation(point);
-        aidPoint.setShowPoint(true);
+        aidPoint.setShowPoint(request.getShowPoint());
         aidPoint.setUpdatedAt(OffsetDateTime.now());
         AidPoint savedAidPoint = aidPointRepository.save(aidPoint);
         return toAidPointDetailResponse(savedAidPoint, user);
@@ -200,10 +200,10 @@ public class AidPointService {
 
     public AidPointDetailResponse addServiceType(Long aidPointId, Long serviceTypeId, User user) {
         AidPoint aidPoint = getAidPointById(aidPointId);
-        ServiceType serviceType = serviceTypeService.getServiceTypeFromRepository(serviceTypeId);
         if (!(User.UserRole.ADMIN.equals(user.getRole()) || aidPoint.getCreatedBy().getId().equals(user.getId()))) {
-            throw new ForbiddenException("Access denied");
+            throw new ForbiddenException("Access Denied");
         }
+        ServiceType serviceType = serviceTypeService.getServiceTypeFromRepository(serviceTypeId);
         aidPoint.getServiceTypes().add(serviceType);
         AidPoint savedAidPoint = aidPointRepository.save(aidPoint);
         return toAidPointDetailResponse(savedAidPoint, user);
@@ -211,17 +211,20 @@ public class AidPointService {
 
     public AidPointDetailResponse removeServiceType(Long aidPointId, Long serviceTypeId, User user) {
         AidPoint aidPoint = getAidPointById(aidPointId);
-        ServiceType serviceType = serviceTypeService.getServiceTypeFromRepository(serviceTypeId);
         if (!(User.UserRole.ADMIN.equals(user.getRole()) || aidPoint.getCreatedBy().getId().equals(user.getId()))) {
-            throw new ForbiddenException("Access denied");
+            throw new ForbiddenException("Access Denied");
         }
+        ServiceType serviceType = serviceTypeService.getServiceTypeFromRepository(serviceTypeId);
         aidPoint.getServiceTypes().remove(serviceType);
         AidPoint savedAidPoint = aidPointRepository.save(aidPoint);
         return toAidPointDetailResponse(savedAidPoint, user);
     }
 
-    public void deleteAidPoint(Long aidPointId) {
+    public void deleteAidPoint(Long aidPointId, User user) {
         AidPoint aidPoint = getAidPointById(aidPointId);
+        if (!(aidPoint.getCreatedBy().getId().equals(user.getId()) || User.UserRole.ADMIN.equals(user.getRole()))) {
+            throw new ForbiddenException("Access Denied");
+        }
         aidPointRepository.delete(aidPoint);
     }
 }

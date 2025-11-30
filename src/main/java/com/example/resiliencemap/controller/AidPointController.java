@@ -75,9 +75,9 @@ public class AidPointController {
         return aidPointService.removeServiceType(aidPointId, serviceId, user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{aidPointId}")
-    public void deleteAidPoint(@PathVariable Long aidPointId) {
-        aidPointService.deleteAidPoint(aidPointId);
+    public void deleteAidPoint(@PathVariable Long aidPointId,
+                               @AuthenticationPrincipal User user) {
+        aidPointService.deleteAidPoint(aidPointId, user);
     }
 }

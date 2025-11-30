@@ -76,20 +76,22 @@ public class PhotoService {
         }
     }
 
-    public List<Long> getPhotoUuidsByComment(Long commentId) {
+    public List<Long> getPhotoIdsByComment(Long commentId) {
         List<Photo> photos = photoRepository.getPhotosByComment_Id(commentId,
                 Sort.by(Sort.Order.asc("isPrimary")));
         return photos.stream().map(Photo::getId).toList();
     }
 
     public void deletePhoto(Long id, User author) {
-        Optional<Photo> optional = photoRepository.findById(id);
-        if (optional.isEmpty()) {
-            throw new NotFoundException("Photo with id " + id + " not found");
-        }
-        Photo photo = optional.get();
-        if (!photo.getAidPoint().getCreatedBy().equals(author)) {
-            throw new ForbiddenException("The user is not the author of the photo");
+        Photo photo = getPhoto(id);
+        if (photo.getAidPoint() != null
+                && !photo.getAidPoint().getCreatedBy().getId().equals(author.getId())
+                && User.UserRole.USER.equals(author.getRole())) {
+            throw new ForbiddenException("Access Denied");
+        } else if (photo.getComment() != null
+                && !photo.getComment().getUser().getId().equals(author.getId())
+                && User.UserRole.USER.equals(author.getRole())) {
+            throw new ForbiddenException("Access Denied");
         }
         photoRepository.deleteById(id);
     }

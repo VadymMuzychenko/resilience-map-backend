@@ -32,10 +32,10 @@ public class AidPointContractController {
     @GetMapping("/aid-point-contact/all")
     public List<AidPointContactDetailResponse> getAllAidPointContacts(
             @RequestParam(value = "searchData", defaultValue = "") String searchData,
-            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "pageNumber", defaultValue = "0") int pageNumber,
             @RequestParam(value = "pageSize", defaultValue = "20") int pageSize,
             @AuthenticationPrincipal User user) {
-        return aidPointContactService.getAllAidPointContacts(searchData, page, pageSize, user);
+        return aidPointContactService.getAllAidPointContacts(searchData, pageNumber, pageSize, user);
     }
 
     @GetMapping("/aid-point-contact/{contactId}")

@@ -56,20 +56,20 @@ public class UserController {
     }
 
     @PostMapping("/user/me/change-username")
-    public void changePassword(@Valid @RequestBody UserChangeUsernameRequest request,
+    public void changeUsername(@Valid @RequestBody UserChangeUsernameRequest request,
                                @AuthenticationPrincipal User user,
                                @RequestHeader(name = "Authorization") String token) {
         userService.changeUsername(request, user, token);
     }
 
     @PostMapping("/user/me/change-phone-number")
-    public VerificationCodeSendStatusResponse changePassword(@Valid @RequestBody UserChangePhoneNumberRequest request,
+    public VerificationCodeSendStatusResponse changePhoneNumber(@Valid @RequestBody UserChangePhoneNumberRequest request,
                                                              @AuthenticationPrincipal User user) {
         return userService.changePhoneNumber(request, user);
     }
 
     @PostMapping("/user/me/change-email")
-    public VerificationCodeSendStatusResponse changePassword(@Valid @RequestBody UserChangeEmailRequest request,
+    public VerificationCodeSendStatusResponse changeEmail(@Valid @RequestBody UserChangeEmailRequest request,
                                                              @AuthenticationPrincipal User user) {
         return userService.changeEmail(request, user);
     }

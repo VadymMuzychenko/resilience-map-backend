@@ -70,7 +70,7 @@ public class AidPointContactService {
     public AidPointContactResponse updateAidPointContactResponse(Long contactId, AidPointContactUpdateRequest request, User user) {
         AidPointContact contact = getContactFromRepository(contactId);
         if (!(User.UserRole.ADMIN.equals(user.getRole()) || contact.getAidPoint().getCreatedBy().getId().equals(user.getId()))) {
-            throw new ForbiddenException("Access denied");
+            throw new ForbiddenException("Access Denied");
         }
         contact.setFullName(request.getFullName());
         contact.setRole(request.getRole());
@@ -84,7 +84,7 @@ public class AidPointContactService {
             pageSize = MAX_PAGE_SIZE;
         }
         if (!(User.UserRole.ADMIN.equals(user.getRole()) || User.UserRole.MODERATOR.equals(user.getRole()))) {
-            throw new ForbiddenException("Access denied");
+            throw new ForbiddenException("Access Denied");
         }
         Pageable pageable = PageRequest.of(page, pageSize);
         List<AidPointContact> aidPointContacts = aidPointContactRepository.findAllContacts(searchData, pageable);
@@ -99,7 +99,7 @@ public class AidPointContactService {
         if (User.UserRole.ADMIN.equals(user.getRole()) || aidPointContactRepository.existsByAidPoint_CreatedBy_Id(user.getId())) {
             aidPointContactRepository.delete(aidPointContact);
         } else {
-            throw new ForbiddenException("Access denied");
+            throw new ForbiddenException("Access Denied");
         }
     }
 }

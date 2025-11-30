@@ -57,7 +57,7 @@ public class CommentService {
 
         Page<Comment> page = commentRepository.findByAidPoint_Id(aidPointId, pageable);
         List<CommentResponse> responseList = page.stream().map(c -> {
-            List<Long> photos = photoService.getPhotoUuidsByComment(c.getId());
+            List<Long> photos = photoService.getPhotoIdsByComment(c.getId());
             return commentMapper.toCommentResponse(c, photos, user);
         }).toList();
         return new PagingList<>(pageNumber, page.getTotalPages(), page.getTotalElements(), responseList);
@@ -71,19 +71,19 @@ public class CommentService {
     public CommentResponse editComment(Long commentId, CommentEditRequest request, User user) {
         Comment comment = getCommentById(commentId);
         if (!comment.getUser().getId().equals(user.getId())) {
-            throw new ForbiddenException("Access denied");
+            throw new ForbiddenException("Access Denied");
         }
         comment.setText(request.getText());
         comment.setRating(request.getRating());
         Comment saved = commentRepository.save(comment);
-        List<Long> photos = photoService.getPhotoUuidsByComment(saved.getId());
+        List<Long> photos = photoService.getPhotoIdsByComment(saved.getId());
         return commentMapper.toCommentResponse(saved, photos, user);
     }
 
     public void deleteComment(Long commentId, User user) {
         Comment comment = getCommentById(commentId);
         if (!(comment.getUser().equals(user) || User.UserRole.ADMIN.equals(comment.getUser().getRole()))) {
-            throw new ForbiddenException("The user is not the author of the comment");
+            throw new ForbiddenException("Access Denied");
         }
         commentRepository.delete(comment);
     }

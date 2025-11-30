@@ -50,7 +50,7 @@ public class UserService {
     public UserProfileResponse editUser(Long userId, UserEditRequest request, User actor) {
         User user = getUserById(userId);
         if (!(User.UserRole.ADMIN.equals(actor.getRole()) || user.getId().equals(actor.getId()))) {
-            throw new ForbiddenException("Access denied");
+            throw new ForbiddenException("Access Denied");
         }
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -133,10 +133,10 @@ public class UserService {
 
     public VerificationCodeSendStatusResponse changeEmail(UserChangeEmailRequest request, User actor) {
         if (!ValidationUtil.isEmailValid(request.getNewEmail())) {
-            throw new BadRequestException("Invalid phone number");
+            throw new BadRequestException("Invalid email");
         }
         if (userRepository.existsByEmail(request.getNewEmail())) {
-            throw new ConflictException("A user with that phone number already exists: " + request.getNewEmail());
+            throw new ConflictException("A user with that email already exists: " + request.getNewEmail());
         }
         return verificationCodeService.sendVerificationCodeToEmail(actor, request.getNewEmail());
     }

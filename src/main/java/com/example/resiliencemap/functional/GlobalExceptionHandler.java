@@ -48,8 +48,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<Object> handleAuthorizationDeniedException(AuthorizationDeniedException e) {
-        logger.info(String.format("[handleAuthorizationDeniedException] message: %s; isGranted: %s", e.getMessage(), e.getAuthorizationResult().isGranted()));
-        return new ResponseEntity<>(createResponseBody(e.getMessage()), HttpStatus.BAD_REQUEST);
+        logger.info(String.format("message: %s; isGranted: %s", e.getMessage(), e.getAuthorizationResult().isGranted()));
+        return new ResponseEntity<>(createResponseBody(e.getMessage()), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(ConflictException.class)
