@@ -4,6 +4,7 @@ import com.example.resiliencemap.core.servicetype.model.ServiceType;
 import com.example.resiliencemap.core.servicetype.model.ServiceTypeCreateRequest;
 import com.example.resiliencemap.core.servicetype.model.ServiceTypeResponse;
 import com.example.resiliencemap.core.servicetype.model.ServiceTypeUpdateRequest;
+import com.example.resiliencemap.functional.exception.ConflictException;
 import com.example.resiliencemap.functional.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,12 @@ public class ServiceTypeService {
     private final ServiceTypeRepository serviceTypeRepository;
 
     public ServiceTypeResponse createServiceType(ServiceTypeCreateRequest serviceTypeCreateRequest) {
+        if (serviceTypeRepository.existsByCode(serviceTypeCreateRequest.getCode())) {
+            throw new ConflictException("ServiceType with this code already exists");
+        }
+        if (serviceTypeRepository.existsBySmsCode(serviceTypeCreateRequest.getSmsCode())) {
+            throw new ConflictException("ServiceType with this sms code already exists");
+        }
         ServiceType serviceType = ServiceTypeMapper.toServiceType(serviceTypeCreateRequest);
         return ServiceTypeMapper.toServiceTypeResponse(serviceTypeRepository.save(serviceType));
     }
@@ -42,6 +49,12 @@ public class ServiceTypeService {
     }
 
     public ServiceTypeResponse updateServiceType(Long serviceTypeId, ServiceTypeUpdateRequest request) {
+        if (serviceTypeRepository.existsByCode(request.getCode())) {
+            throw new ConflictException("ServiceType with this code already exists");
+        }
+        if (serviceTypeRepository.existsBySmsCode(request.getSmsCode())) {
+            throw new ConflictException("ServiceType with this sms code already exists");
+        }
         ServiceType serviceType = getServiceTypeFromRepository(serviceTypeId);
         serviceType.setCode(request.getCode());
         serviceType.setName(request.getName());

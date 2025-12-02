@@ -4,6 +4,7 @@ import com.example.resiliencemap.core.locationtype.model.LocationType;
 import com.example.resiliencemap.core.locationtype.model.LocationTypeCreateRequest;
 import com.example.resiliencemap.core.locationtype.model.LocationTypeResponse;
 import com.example.resiliencemap.core.locationtype.model.LocationTypeUpdateRequest;
+import com.example.resiliencemap.functional.exception.ConflictException;
 import com.example.resiliencemap.functional.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,12 @@ public class LocationTypeService {
     private final LocationTypeRepository locationTypeRepository;
 
     public LocationTypeResponse createLocationType(LocationTypeCreateRequest locationTypeCreateRequest) {
+        if (locationTypeRepository.existsByCode(locationTypeCreateRequest.getCode())) {
+            throw new ConflictException("LocationType with this code already exists");
+        }
+        if (locationTypeRepository.existsBySmsCode(locationTypeCreateRequest.getSmsCode())) {
+            throw new ConflictException("LocationType with this sms code already exists");
+        }
         LocationType locationType = LocationTypeMapper.toLocationType(locationTypeCreateRequest);
         return LocationTypeMapper.toLocationTypeResponse(locationTypeRepository.save(locationType));
     }
@@ -41,6 +48,12 @@ public class LocationTypeService {
     }
 
     public LocationTypeResponse updateLocationType(Long locationTypeId, LocationTypeUpdateRequest request) {
+        if (locationTypeRepository.existsByCode(request.getCode())) {
+            throw new ConflictException("LocationType with this code already exists");
+        }
+        if (locationTypeRepository.existsBySmsCode(request.getSmsCode())) {
+            throw new ConflictException("LocationType with this sms code already exists");
+        }
         LocationType locationType = getLocationType(locationTypeId);
         locationType.setCode(request.getCode());
         locationType.setName(request.getName());
@@ -63,7 +76,7 @@ public class LocationTypeService {
         }
     }
 
-    private LocationType createUserLocationtype() {
+    public LocationType createUserLocationtype() {
         LocationType locationType = new LocationType();
         locationType.setCode("private_initiative");
         locationType.setSmsCode("u");

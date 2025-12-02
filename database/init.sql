@@ -36,8 +36,8 @@ CREATE SEQUENCE location_types_sequence
 CREATE TABLE location_types
 (
     id          BIGINT PRIMARY KEY DEFAULT nextval('location_types_sequence'),
-    code        VARCHAR(50) NOT NULL,
-    sms_code    VARCHAR(10) NOT NULL,
+    code        VARCHAR(50) UNIQUE NOT NULL,
+    sms_code    VARCHAR(10) UNIQUE NOT NULL,
     name        VARCHAR(50) NOT NULL,
     description VARCHAR(255)
 );
@@ -138,8 +138,8 @@ CREATE SEQUENCE service_types_sequence
 CREATE TABLE service_types
 (
     id          BIGINT PRIMARY KEY DEFAULT nextval('service_types_sequence'),
-    code        VARCHAR(50) NOT NULL,
-    sms_code    VARCHAR(10) NOT NULL,
+    code        VARCHAR(50) UNIQUE NOT NULL,
+    sms_code    VARCHAR(10) UNIQUE NOT NULL,
     name        VARCHAR(50) NOT NULL,
     description VARCHAR(255)
 );
