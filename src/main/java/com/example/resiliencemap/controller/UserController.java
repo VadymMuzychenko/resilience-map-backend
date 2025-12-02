@@ -1,5 +1,6 @@
 package com.example.resiliencemap.controller;
 
+import com.example.resiliencemap.core.user.UserMapper;
 import com.example.resiliencemap.core.user.UserService;
 import com.example.resiliencemap.core.user.model.*;
 import com.example.resiliencemap.core.verification.model.VerificationCodeSendStatusResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @PostMapping("/user/{userId}")
     public UserProfileResponse editUser(@PathVariable("userId") Long userId,
@@ -77,5 +79,10 @@ public class UserController {
     @PostMapping("/user/verification-code/confirm")
     public UserConfirmContactMethodResponse confirmContactMethod(@Valid @RequestBody ConfirmRequest confirmRequest) {
         return userService.confirmContactMethod(confirmRequest);
+    }
+
+    @GetMapping("/user/me")
+    public UserProfileResponse getThisUser(@AuthenticationPrincipal User user) {
+        return userMapper.toUserProfileResponse(user);
     }
 }
