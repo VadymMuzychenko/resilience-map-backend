@@ -7,4 +7,6 @@ public interface ServiceTypeRepository extends JpaRepository<ServiceType, Long> 
     boolean existsByCode(String code);
 
     boolean existsBySmsCode(String smsCode);
+
+    ServiceType getServiceTypeByCode(String code);
 }

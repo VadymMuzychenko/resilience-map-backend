@@ -41,6 +41,15 @@ public class LocationTypeService {
         }
     }
 
+    public LocationType getLocationTypeByCode(String code) {
+        Optional<LocationType> optional = locationTypeRepository.findByCode(code);
+        if (optional.isPresent()) {
+            return optional.get();
+        } else {
+            throw new NotFoundException("LocationType not found");
+        }
+    }
+
     public List<LocationTypeResponse> getLocationTypes() {
         List<LocationType> locationTypeList = locationTypeRepository.findAll();
         return locationTypeList.stream()
@@ -68,7 +77,7 @@ public class LocationTypeService {
     }
 
     public LocationType getUserLocationType() {
-        Optional<LocationType> optional = locationTypeRepository.findByCode("private_initiative"); // TODO
+        Optional<LocationType> optional = locationTypeRepository.findByCode("PRIVATE_INITIATIVE"); // TODO
         if (optional.isPresent()) {
             return optional.get();
         } else {
@@ -78,8 +87,8 @@ public class LocationTypeService {
 
     public LocationType createUserLocationtype() {
         LocationType locationType = new LocationType();
-        locationType.setCode("private_initiative");
-        locationType.setSmsCode("u");
+        locationType.setCode("PRIVATE_INITIATIVE");
+        locationType.setSmsCode("PI");
         locationType.setName("Приватна ініціатива");
         locationType.setDescription("Точка, створена користувачем");
         return locationTypeRepository.save(locationType);
