@@ -60,6 +60,7 @@ public class AidPointService {
         aidPoint.setShowPoint(true);
         aidPoint.setCreatedAt(OffsetDateTime.now());
         aidPoint.setUpdatedAt(OffsetDateTime.now());
+        aidPoint.setAddress(request.getAddress());
 
         if (User.UserRole.USER.equals(user.getRole())) {
             aidPoint.setLocationType(locationTypeService.getUserLocationType());
@@ -184,6 +185,7 @@ public class AidPointService {
         point.setSRID(4326);
         aidPoint.setLocation(point);
         aidPoint.setShowPoint(request.getShowPoint());
+        aidPoint.setAddress(request.getAddress());
         aidPoint.setUpdatedAt(OffsetDateTime.now());
         AidPoint savedAidPoint = aidPointRepository.save(aidPoint);
         return toAidPointDetailResponse(savedAidPoint, user);
