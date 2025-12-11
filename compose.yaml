@@ -28,9 +28,27 @@ services:
     depends_on:
       resilience-map-db:
         condition: service_healthy
+      resilience-map-rabbitmq:
+        condition: service_healthy
     environment:
       - SERVER_PORT=8080
       - SPRING_DATASOURCE_URL=jdbc:postgresql://resilience-map-db:5432/resilience_map_db
       - SPRING_DATASOURCE_USERNAME=username
       - SPRING_DATASOURCE_PASSWORD=password
       - DOCKER_BUILDKIT=1
+
+  resilience-map-rabbitmq:
+    image: rabbitmq:4.1-management
+    hostname: my-rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
