@@ -35,11 +35,16 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://resilience-map-db:5432/resilience_map_db
       - SPRING_DATASOURCE_USERNAME=username
       - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_RABBITMQ_HOST=resilience-map-rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=user
+      - SPRING_RABBITMQ_PASSWORD=password
       - DOCKER_BUILDKIT=1
 
   resilience-map-rabbitmq:
     image: rabbitmq:4.1-management
     hostname: my-rabbit
+    restart: always
     ports:
       - "5672:5672"
       - "15672:15672"
